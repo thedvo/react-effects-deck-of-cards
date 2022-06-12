@@ -54,14 +54,18 @@ function Deck() {
 				alert(e);
 			}
 		}
+		// call the function if clicked state is set to True (meaning user clicked button to draw card)
 		if (clicked) {
 			drawCard();
 		}
+
+		// clean up function to reset setClicked to False. Allows user to then click again to draw card.
 		return () => {
 			setClicked(false);
 		};
 	}, [clicked, deck]);
 
+	// function which runs when user clicks on button to draw card. Will setClicked to True, which then triggers the useEffect to drawCard
 	const toggleDraw = () => {
 		setClicked((clicked) => !clicked);
 	};
@@ -81,10 +85,3 @@ function Deck() {
 }
 
 export default Deck;
-
-// draw deck from API on load
-// every button click, use reference to deck ID to draw a card.
-
-// use reference deck?
-// useEffect to do intiial load of the deck
-// another useEffect to draw cards from that same deck
