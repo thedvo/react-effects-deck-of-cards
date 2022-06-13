@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Card from './Card';
-import './Deck.css';
+import './DeckAutoDraw.css';
 
 /** Deck Component --- makes initial API call to Deck of Cards API */
 const API_BASE_URL = 'http://deckofcardsapi.com/api/deck';
 
-function Deck() {
+function DeckAutoDraw() {
 	const [deck, setDeck] = useState(null);
 	const [drawn, setDrawn] = useState([]);
-	const [clicked, setClicked] = useState(false);
+	const [autoDraw, setAutoDraw] = useState(false);
+	const timerRef = useRef(null);
 
 	// this is called *after* component first added to DOM
 	// Loads a deck from the API
@@ -35,6 +36,7 @@ function Deck() {
 
 				// if there are no remaining cards in the deck, should throw an error
 				if (drawResult.data.remaining === 0) {
+					setAutoDraw(false);
 					throw new Error('No cards remaining!');
 				}
 
@@ -54,20 +56,20 @@ function Deck() {
 				alert(e);
 			}
 		}
-		// call the function if clicked state is set to True (meaning user clicked button to draw card)
-		if (clicked) {
-			drawCard();
+		if (autoDraw && !timerRef.current) {
+			timerRef.current = setInterval(async () => {
+				await drawCard();
+			}, 1000);
 		}
 
-		// clean up function to reset setClicked to False. Allows user to then click again to draw card.
 		return () => {
-			setClicked(false);
+			clearInterval(timerRef.current);
+			timerRef.current = null;
 		};
-	}, [clicked, deck]);
+	}, [autoDraw, setAutoDraw, deck]);
 
-	// function which runs when user clicks on button to draw card. Will setClicked to True, which then triggers the useEffect to drawCard
-	const toggleDraw = () => {
-		setClicked((clicked) => !clicked);
+	const toggleAutoDraw = () => {
+		setAutoDraw((auto) => !auto);
 	};
 
 	const cards = drawn.map((c) => (
@@ -76,12 +78,12 @@ function Deck() {
 
 	return (
 		<div className="Deck">
-			<button className="Deck-draw-btn" onClick={toggleDraw}>
-				Draw
+			<button className="Deck-autodraw-btn" onClick={toggleAutoDraw}>
+				{autoDraw ? 'Stop' : 'Start'} Autodraw
 			</button>
 			<div className="Deck-display">{cards}</div>
 		</div>
 	);
 }
 
-export default Deck;
+export default DeckAutoDraw;
